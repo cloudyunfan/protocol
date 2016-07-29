@@ -1,0 +1,46 @@
+function [prob]= transProb1( State_pre,State_aft,Te,Tb)
+%  we take use of the function to calculate transition matrix
+% Input:
+%     State_pre: state before transission
+%     State_aft: state after transission
+%     Te: energy comsumed
+%     Tb: PKt deliveried
+% % Output:
+%     prob:  probability of transition from Si to Sj with action a
+%     prob_B : probability of packets buffer state transition
+%     prob_E : probability of energy buffer state transition
+%     b : number of pakcets coming during state transmission
+%     e : number of energy coming during state transmission
+global TB Emax lambdaE lambdaB Bmax
+%----energy Prob----
+    e = sj - si + E1;
+    e = ceil(e);
+    if(e>=0)
+        if(sj<(Emax-1))
+           prob_E = exp(-lambdaE*TB)*(lambdaE*TB)^(e)/factorial(e);
+        else
+           ke=0:e-1;
+           temp = exp(-lambdaE*TB)*(lambdaE*TB).^(ke)./factorial(ke); 
+           prob_E = 1-sum(temp);
+        end
+    else 
+        prob_E = 0;
+    end
+ %-----Pkt Prob-----------
+    b = sj - si + E1;
+    e = ceil(e);
+    if(e>=0)
+        if(sj<(Emax-1))
+           prob_E = exp(-lambdaE*TB)*(lambdaE*TB)^(e)/factorial(e);
+        else
+           ke=0:e-1;
+           temp = exp(-lambdaE*TB)*(lambdaE*TB).^(ke)./factorial(ke); 
+           prob_E = 1-sum(temp);
+        end
+    else 
+        prob_E = 0;
+    end
+  %-----total Prob----
+  T(si,sj,a) =  prob_E;
+
+end

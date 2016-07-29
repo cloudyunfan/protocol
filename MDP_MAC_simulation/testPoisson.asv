@@ -1,0 +1,14 @@
+x=1:100;
+lambda = 0.05;
+TB = 100;
+y = exp(-lambda*TB)*(lambda*TB).^(x)./factorial(x);
+plot(y);
+
+
+Emax = 10;
+Bmax = 10;
+load T.mat
+load S.mat
+for s=1:length(S)-1
+   temp = sum(T) 
+end

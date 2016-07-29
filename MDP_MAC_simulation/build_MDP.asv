@@ -1,0 +1,87 @@
+%% 根据状态转移概率矩阵和收益函数，使用值迭代算法求解最优策略
+clear all
+clc
+
+addpath('MDPtoolbox');
+%% ----------定义变量----------------------------------
+%------------全局变量------------
+global S A TB RAP Emax lambdaE E_tx len_Pkt Block N_hup N_lup
+TB = 200;
+N_hup = 4;   %固定的高优先级节点数
+Block = 16;  %MAP中每一个块的时隙数
+len_MAP = N_hup*Block;  %MAP的长度
+RAP = TB-len_MAP; %RAP阶段固定有100个时隙
+len_Pkt = 1;  %发送一个包需要的时隙数
+E_tx = 1;
+Emax = 50;
+
+S = 0:Emax-1;  %状态集合
+A = [0,1]; % set of actions 
+
+%-----------------局部变量-----------
+gamma = 0.6;   % 折扣因子
+epsi = 0.01;  %迭代终止条件
+maxiter = 100; %最大迭代次数
+
+%% -----------载入统计的通信参数---------------------------------------
+% lambdaE = 0.1;
+% N = 2:2:12;
+%-------------------------------VarN----------------------------
+%-----------统计值
+% load staticpara_CSMACA_VaringN(UPH3-UPL0,NH4-E0.1)(NL2-2-12).mat
+% Sk_rap = Sk;
+% Ek_rap = Ek;
+% load staticpara_CSMACA_VaringN(UPH3-UPL0,NH1-E0.1)(NL2-2-12).mat
+% Sk_insrap = Sk;
+% Ek_insrap = Ek;
+%------------理论值
+% load staticpara_CSMACA_VaringN(theory)(UPH3-UPL0,NH4-E0.1)(NL2-2-12).mat
+% Sk_rap = S1;
+% Ek_rap = E1;
+% load staticpara_CSMACA_VaringN(theory)(UPH3-UPL0,NH1-E0.1)(NL2-2-12).mat
+% Sk_insrap = S1;
+% Ek_insrap = E1;
+
+%-----------------------------------VarE----------------------
+lambdaE = 0.02:0.02:0.12;
+N = 6;
+%------------理论值
+load staticpara_CSMACA_VaringE(theory)(UPH3-UPL0,NH1-NL6)(E0.02-0.02-0.12).mat
+
+load staticpara_CSMACA_VaringE(theory)(UPH3-UPL0,NH4-NL6)(E0.02-0.02-0.12).mat
+N_node = size(Sk_rap,2);
+%% 对所有节点数情况调用MDPtoolbox里的值迭代函数求解最优策略
+% T = cell(UP,Num_node);
+R = cell(1,N_node);
+P = cell(1,N_node);
+
+% plot_throughput
+% lambdaE_sim = 0.02:0.005:0.065;
+for n=1:N_node%
+    N_lup = N(n);
+% lambdaE = lambdaE_sim(n);
+    disp(['condition: (N_lup) = ( ' ,num2str(n),') ']);
+%----------------建立MDP模型，计算转移概率矩阵和收益函数------------         
+    t_Prob = 0;
+    t_Reward = 0;
+    [T1,t_Prob1] = ProbComput1( Ek_rap(2,n),Ek_insrap(2,n),Sk_rap(2,n),Sk_insrap(2,n) );       
+    [R1,t_Reward1] = rewardComput1( Ek_rap(:,n),Ek_insrap(:,n),Sk_rap(:,n),Sk_insrap(:,n) );
+    t_Prob = t_Prob + t_Prob1;
+    t_Reward = t_Reward + t_Reward1;
+    disp(['build MDP done! time consumed is: ', num2str(t_Reward+t_Prob), ' seconds. now resolve MDP....']); %t_Prob+
+%         T1 = T{up,n};
+    T{n} = T1;
+    R{n} = R1;
+    %---画出收益函数进行分析-----------------
+%          plot(R1,'d');
+%          legend('a==0','a==1','a==2','a==3');
+    %------------------------使用值迭代算法求解------------------------
+    V0 = zeros(length(S),1);
+    [p, iter, cpu_time] = mdp_value_iteration(T1, R1, gamma, epsi, maxiter, V0);
+    disp(['resolve MDP done! iteration is ',num2str(iter),' consumed time is ',num2str(cpu_time),'seconds.'])
+%         p(ind0) = 4;   %强行使B==0||E==0时使用第4种行为
+    P{n} = p;       
+end
+% stem(policy);(theory)
+% save('MDPresult_VaringN(theory)(UPH3-UPL0,E0.1)(NL2-2-12).mat','P','A','S','T','R');
+save('MDPresult_VaringE(UPH3-UPL0,NL6)(E0.02-0.02-0.12).mat','P','A','S','T','R');

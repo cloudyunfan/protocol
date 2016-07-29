@@ -1,0 +1,87 @@
+%% 根据状态转移概率矩阵和收益函数，使用值迭代算法求解最优策略
+addpath('MDPtoolbox');
+% load ProbMatr_3_3.mat
+% rewardComput   %重新计算reward
+
+%----------定义变量----------------------------------
+%全局变量
+global S A TB Emax Bmax lambdaB lambdaE
+TB = 200;
+Bmax = 30;
+Emax = 40;
+lambdaB = 0.03;
+lambdaE = 0.04;
+B = linspace(0,Bmax-1,Bmax); %buffer state
+E = linspace(0,Emax-1,Emax); %energy state
+S = {};
+ind_S = 1;
+ind0 = [];
+for b =0:Bmax-1
+    for e=0:Emax-1
+        S{ind_S} = [b,e];
+        ind_S = ind_S + 1;
+        if(b==0||e==0)
+            ind0 = [ind0 ind_S];
+        end
+    end
+end
+A = [0,1,2,3]; % set of actions 
+
+%局部变量
+No_node = 5:5:35;
+gamma = 0.9;   % 折扣因子
+epsi = 0.01;  %迭代终止条件
+maxiter = 100; %最大迭代次数
+
+%-----------载入RAP通信参数----------------------------------------
+%（TX_RAP_avg_t,Pktloss_rate,PS_RAP_avg,Interval_RAP_t）
+% load statistic_para_RAP.mat   
+load TX_avg.mat;   %载入RAP和MAP阶段平均发送一个包需要的能量
+
+%% 调用MDPtoolbox里的值迭代函数求解
+% 使用所有节点数N和优先权UP的组合情况下的参数的TX_RAP_avg和TX_MAP_avg的平均值来求解MDP、
+TX_RAP = mean( mean(TX_RAP_avg) );
+TX_MAP = mean( mean(TX_MAP_avg) );
+[T,R] = ProbComput(No_node(n),TX_RAP,TX_MAP);   %建立MDP模型，计算转移概率矩阵和收益函数
+%--------使用值
+V0 = zeros(length(S),1);
+[p, iter, cpu_time] = mdp_value_iteration(T, R, gamma, epsi, maxiter, V0);
+policy{up,n} = p;
+iter_t(up,n) = iter;
+
+% stem(policy);
+save('MDPresult_3_4.mat','policy','iter','cpu_time');
+
+
+% %% ******************自己写的值迭代函数求解************************
+% %------初始化值函数--------------------------------------
+% V = zeros(maxiter,length(S));   %initialize value function
+% P = -1*ones(100,length(S));
+% for s=1:length(S)
+%     [maxval,optAct] = maxValue(R,T,A,S,V(1,:),s,gamma);
+%     V(2,s) = maxval;
+%     P(2,s) = optAct;
+% end
+% %------迭代更新值函数V直到满足停止条件--------------------
+% t = 2;      %迭代计数器
+% while(max(abs( V(t,:)-V(t-1,:) )) > epsi)
+%     for s=1:length(S)
+%        [maxval,optAct] = maxValue(R,T,A,S,V(t,:),s,gamma);
+%        V(t+1,s) = maxval;
+%        P(t+1,s) = optAct;
+%     end
+%     t = t + 1
+% end
+% 
+% %---------------根据最优的值函数V计算出最优策略--------------
+% for s=1:length(S)
+%    for a=1:length(A)
+%         tempR = 0;
+%         for s1=1:length(S)
+%             tempR = tempR + T(s,s1,a)*V(s1);
+%         end
+%         val(a) = R(s,a) + gamma*tempR;
+%    end
+%    [maxV ind_A] = max(val);
+%    P1(s) = ind_A;    
+% end

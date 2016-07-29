@@ -1,0 +1,61 @@
+function R = reward(S,a,B_rap_avg,B_map_avg,E_rap_avg,E_map_avg)
+% to calculate reward for transmission from state Si to Sj with action a 
+% Input:
+%     S: state
+%     a: action
+%     E_rap_avg:RAP 阶段平均能消耗掉的能量
+%     E_map_avg:MAP 阶段平均能消耗掉的能量
+%     B_rap_avg:RAP阶段平均能传输的包数
+%     B_map_avg:MAP阶段平均能传输的包数
+% Output:
+%     R: reward
+global  N Emax Bmax lambdaB lambdaE TB len_MAP len_Pkt E_TX;
+
+%% -----------提取数据和能量状态-------------------
+Sb = S(1);
+Se = S(2);
+[Tb,Te] = throughput_new(Sb,Se,a,B_rap_avg,B_map_avg,E_rap_avg,E_map_avg);
+gammaB = Sb/(Bmax-1);%数据包折扣因子
+gammaE = Se/(Emax-1);%能量折扣因子
+
+%% ---------由传输的包数量带来的奖励-------------------
+R1 = Tb/(lambdaB*TB);   
+R1 = R1*gammaB;
+
+%% -----------由让出的时隙资源带来的奖励-----------------
+S_t = len_MAP/N + B_rap_avg*len_Pkt;
+S_map = len_MAP/N;
+S_rap = B_rap_avg*len_Pkt;
+switch a
+    case 0
+        R2 = S_map/S_t;   %归一化的奖励
+    case 1
+        R2 = S_rap/S_t;
+    case 2
+        R2 = 0;
+    case 3
+        R2 = 1;
+end
+%根据节点buffer中能量和数据量来计算折扣因子，buffer中能量或数据量越大，折扣因子越小
+R2 = R2*( 1 - min(gammaB,gammaE) );
+
+%% ----------由消耗的能量带来的惩罚---------------------
+D1 = Te/(lambdaE*TB);
+D1 = D1*( 1-gammaE );
+
+%% -------------由浪费MAP中预定的时隙带来的惩罚-----------
+D2 = 0;
+if(a==1)
+    D2 = max( S_map - min(Sb,Se/E_TX),0 );    
+else
+   if(a==2)
+       [b,e] = throughput_new(Sb,Se,0);  %减去RAP阶段的消耗
+       D2 = S_map - min(Sb-b,(Se-e)/E_TX);
+   end
+end
+D2 = max(0,D2);
+D2 = D2/S_map;   %归一化
+%% ----------------计算总收益---------------------------
+R = R1 + R2 - D1 -D2;
+
+end %end function

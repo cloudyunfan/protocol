@@ -1,0 +1,60 @@
+%% 计算状态转移概率矩阵和收益函数
+function [T,t] = ProbComput1(Sk_rap,Ek_rap,Sk_insrap,Ek_insrap)
+% Input:
+%     Sk_rap: RAP阶段平均一个时隙传输的包数量（2*1）的向量
+%     Ek_rap: RAP阶段平均一个时隙的能耗
+%     Sk_insrap: Instant RAP阶段平均能传输的包数
+%     Ek_insrap: Instant RAP阶段平均一个时隙的能耗
+% Output:
+%     T: transsition probability
+%     t: cpu time
+
+%--------全局变量------------------------------------------
+global A S 
+
+
+%-------------------计算状态转移概率矩阵-----------------------------
+ind =0;
+Twait = waitbar(0,'计算状态转移概率矩阵进度');
+t = 0;
+T = zeros(length(S),length(S),length(A));
+for a = 1:length(A)
+    for si=1:length(S)
+        tic;
+        for sj=1:length(S)
+%             tic;
+            %% 计算能耗
+                switch(a)
+                    case 0
+                        E = Block*Ek_insrap + RAP*Ek_rap;   %RAP和instant RAP的能耗之和
+                    case 1
+                        E = Block*lambdaE +  RAP*Ek_rap;  %RAP 和 scheduled allocation中能耗之和
+                end
+             %% 计算概率
+                e = Sj - Si + E;
+                e = ceil(e);
+                if(e>=0)
+                    if(Sej<(Emax-1))
+                       prob_E = exp(-lambdaE*TB)*(lambdaE*TB)^(e)/factorial(e);
+                    else
+                       ke=0:e-1;
+                       temp = exp(-lambdaE*TB)*(lambdaE*TB).^(ke)./factorial(ke); 
+                       prob_E = 1-sum(temp);
+                    end
+                else 
+                    prob_E = 0;
+                end
+            T(si,sj,a) =  prob;
+%             t = t + toc;                         
+        end 
+        ind = ind + 1;
+        str = ['概率转移矩阵计算已完成' num2str( ind*100/(length(A)*length(S) ) ) '%'];
+        waitbar( ind/(length(A)*length(S)),Twait,str );
+        t_temp = toc;
+        t = t + t_temp; 
+%         [si,a,t_temp]
+    end
+end
+close(Twait);  
+
+end %function end

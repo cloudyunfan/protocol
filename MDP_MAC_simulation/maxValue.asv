@@ -1,0 +1,16 @@
+function maxV = maxValue(R,T,A,V,s,)
+%input:
+%     s: state s
+% ouput:
+%     maxV: maximum value in this iteration for state s
+gamma = 0.7;
+for a=1:length(A)
+    tempR = 0;
+    for s1=1:length(S)
+        tempR = tempR + T(s,s1,a)*V(s1);
+    end
+    val(a) = R(s,a) + gamma*tempR;
+end
+
+
+end

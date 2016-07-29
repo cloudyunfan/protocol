@@ -1,0 +1,91 @@
+%% 计算状态转移概率矩阵和收益函数
+function [T,S,A,R] = ProbComput(Num_node,TX_RAP_avg,TX_MAP_avg)
+%Input:
+%     Num_node:number of nodes
+%     TX_RAP_avg: energy exhost sending a packet in RAP
+%     TX_MAP_avg:energy exhost sending a packet in MAP
+Output:
+    T: transsition probability
+    S: state space
+    A: 
+%--------定义全局变量------------------------------------------
+global N TB Emax Bmax lambdaB lambdaE T_avg_rap T_gts_map E_rap_pkt E_map_pkt
+
+lambdaB = 0.03;
+lambdaE = 0.04;
+TB = 200;
+Bmax = 30;
+Emax = 40;
+
+N = 5; %节点数
+len_RAP = floor(TB/2); %RAP时隙数
+len_MAP = TB-len_RAP; %MAP时隙数
+T_avg_rap = 10;  %rap阶段平均能发送的包数量，注意不同优先级的节点应该不同,最后求得的策略每个优先级有一个
+T_gts_map = floor(len_MAP/N);  %MAP阶段给每个节点分配的时隙数，相当于能发送的包数量
+E_rap_pkt = 1.125;  %RAP阶段平均每发送一个包需要的能量
+E_map_pkt = 1;  %MAP阶段平均每发送一个包需要的能量
+
+%--------------定义联合状态数据结构---------------------------------
+B = linspace(0,Bmax-1,Bmax); %buffer state
+E = linspace(0,Emax-1,Emax); %energy state
+S = {};
+ind_S = 1;
+ind0 = [];
+for b =0:Bmax-1
+    for e=0:Emax-1
+        S{ind_S} = [b,e];
+        ind_S = ind_S + 1;
+        if(b==0||e==0)
+            ind0 = [ind0 ind_S];
+        end
+    end
+end
+
+A = [0,1,2,3]; % set of actions 
+cpu_time = 0;
+%-------------------计算状态转移概率矩阵-----------------------------
+ind =0;
+Twait = waitbar(0,'计算状态转移概率矩阵进度');
+t = 0;
+for a = 1:length(A)
+    for si=1:length(S)
+        for sj=1:length(S)
+            tic;
+            [prob, prob_B, prob_E, b, e] = transProb(S{si},S{sj},A(a));  % transmission probability
+            T_B(si,sj,a) = prob_B;
+            T_E(si,sj,a) = prob_E;
+            T(si,sj,a) =  prob;
+            B(si,sj,a) = b;
+            E(si,sj,a) = e;
+            t = t + toc;
+%             [si,sj,a]   
+            ind = ind +1;
+            str = ['已完成' num2str(floor(ind*100/(length(A)*length(S)*length(S)))) '%'];
+            waitbar(ind/(length(A)*length(S)*length(S)),Twait,str);
+        end
+        
+    end
+end
+close(Twait);
+
+%-----------------------计算收益函数矩阵-------------------------------------------
+rewardComput
+
+%----------------保存得到的概率转移矩阵和收益函数矩阵--------------------------------
+% save('T.mat','T');
+% save('S.mat','S');
+% save('A.mat','A');
+% save('reward.mat','R');
+save('ProbMatr_3_3','T','S','A','R');
+
+
+
+
+
+
+
+
+
+
+
+

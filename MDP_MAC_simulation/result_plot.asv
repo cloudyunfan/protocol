@@ -1,0 +1,5 @@
+global CWmin CWmax UP
+for up =1:length(UP)
+    ind = find()
+    
+end
