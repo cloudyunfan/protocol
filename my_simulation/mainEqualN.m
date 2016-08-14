@@ -103,7 +103,7 @@ for indE = 1:length(NL)%   多种优先级情况下
         last_TX_time_RAP_ini = ones(1,N);
 %         tic
         %yf Act(action),ignore the act ,always RAP %TDMA_CHN_Sta,
-        [ReTX_time_pre,Def_Time_Pre,CSMA_Sta_Pre,PL_RAP,PS_RAP,Colli_RAP,ELE_RAP,Succ_TX_time_RAP,E_buff,E_flow,Count,ELE_tx] = slotCSMACA_unsat_new00(len_RAP,CSMA_Sta_Pre,Def_Time_Pre,RAP_CHN_Sta,ReTX_time_pre,CW,last_TX_time_RAP_ini,E_buff);%ELE_RAP,（倒数第四）,E_buff,E_flow（最后两个）等一下改 CW可以全局传过去
+        [ReTX_time_pre,Def_Time_Pre,CSMA_Sta_Pre,PL_RAP,PS_RAP,Colli_RAP,ELE_RAP,Succ_TX_time_RAP,E_buff,Count,ELE_tx] = slotCSMACA_unsat_new00(len_RAP,CSMA_Sta_Pre,Def_Time_Pre,RAP_CHN_Sta,ReTX_time_pre,CW,last_TX_time_RAP_ini,E_buff);%ELE_RAP,（倒数第四）,E_buff,E_flow（最后两个）等一下改 CW可以全局传过去
 %         toc
         
         PL_RAP_sp(j,:) = PL_RAP;
@@ -132,7 +132,7 @@ for indE = 1:length(NL)%   多种优先级情况下
 %         B_of_sp(j,:) = B_overflow;
 %         B_sp(j,:) = b_flow;  
 %         EH_of_sp(j,:) = E_overflow;
-        EH_sp(j,:) = E_flow;  %yf 一会儿更改，将e_flow和E_buff放到slotCSMACA_unsat_new 长度从Tsim变成了rap_length
+%        EH_sp(j,:) = E_flow;  %yf 一会儿更改，将e_flow和E_buff放到slotCSMACA_unsat_new 长度从Tsim变成了rap_length
 % yf        hist_E(j,:) = E_buff;
 %         hist_B(j,:) = B_buff;
         

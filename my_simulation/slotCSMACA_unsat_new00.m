@@ -1,4 +1,4 @@
-function [ReTX_time,backoff_after,CSMA_sta,pl_t,ps_t,PL_colli,ELE_ex,TX_time,E_buff,E_flow,Count,ELE_tx] = slotCSMACA_unsat_new00(rap_length,CSMA_sta,def_time_pre,last_CHN_sta,ReTX_times_pre,CW,last_TX_time,E_buff) %act,,B_buff
+function [ReTX_time,backoff_after,CSMA_sta,pl_t,ps_t,PL_colli,ELE_ex,TX_time,E_buff,Count,ELE_tx] = slotCSMACA_unsat_new00(rap_length,CSMA_sta,def_time_pre,last_CHN_sta,ReTX_times_pre,CW,last_TX_time,E_buff) %act,,B_buff
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%ELE_ex(倒数第四),E_buff,E_flow（最后两个）
 %%% CSMA/CA transmission under unsaturation condition
 % Input:
@@ -130,7 +130,7 @@ while ( t<=rap_length )
 %          else
         if ( CSMA_sta(n)==1 )
           if (Backoff_time(n) == 1) %yf
-             if( E_buff(n)>=(E_CCA+E_TX) ) %&&isRAP(n)==1
+ %            if( E_buff(n)>=(E_CCA+E_TX) ) %&&isRAP(n)==1
               %进行信道状态检查CCA
               ELE_ex(n) = ELE_ex(n) + E_CCA;  %消耗的能量累积记下
               E_buff(n) = E_buff(n) - E_CCA;   %消耗掉能量
@@ -149,11 +149,11 @@ while ( t<=rap_length )
                    end
               end   
               isCCA(n) = 1;
-             end
+ %            end
              
           else %yf
               
-              if( E_buff(n)>=(E_CCA) )%&&isRAP(n)==1
+%              if( E_buff(n)>=(E_CCA) )%&&isRAP(n)==1
                %进行信道状态检查CCA
                ELE_ex(n) = ELE_ex(n) + E_CCA;  %消耗的能量累积记下
                E_buff(n) = E_buff(n) - E_CCA;   %消耗掉能量
@@ -172,13 +172,13 @@ while ( t<=rap_length )
                     end
                end   
                isCCA(n) = 1;
-              end
+ %             end
               
           end %yf end backoff
         else
             if( (CSMA_sta(n)==0)&&(def_time_pre(n)~= -1)) 
                 if (def_time_pre(n) == 1) %yf
-                    if( E_buff(n)>=(E_CCA+E_TX) ) %&&isRAP(n)==1
+%                    if( E_buff(n)>=(E_CCA+E_TX) ) %&&isRAP(n)==1
               %进行信道状态检查CCA
                       ELE_ex(n) = ELE_ex(n) + E_CCA;  %消耗的能量累积记下
                       E_buff(n) = E_buff(n) - E_CCA;   %消耗掉能量
@@ -197,7 +197,7 @@ while ( t<=rap_length )
                            end
                       end   
                      isCCA(n) = 1;
-                    end
+ %                   end
              
              else %yf
 
@@ -285,8 +285,8 @@ while ( t<=rap_length )
     end  %end for
     %%
     %yf每个时隙的能量改变
-    [e_flow,E_buff] = buff_update_new(E_buff);
-    EH_sp(t,:) = e_flow;
+%    [e_flow,E_buff] = buff_update_new(E_buff);
+%    EH_sp(t,:) = e_flow;
 
     %yf更新时隙
     t = t + 1;
@@ -299,7 +299,7 @@ for n=1:N
     if( ~isempty(ind_TX) )
         TX_time{1,n} = ind_TX;
     end
-    E_flow = sum( EH_sp(:,n) );%yf每个时隙到达的能量
+%    E_flow = sum( EH_sp(:,n) );%yf每个时隙到达的能量
 end
 %% update channel condition
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
