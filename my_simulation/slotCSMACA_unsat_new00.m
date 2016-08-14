@@ -201,7 +201,7 @@ while ( t<=rap_length )
              
              else %yf
 
-                  if( E_buff(n)>=(E_CCA) )%&&isRAP(n)==1
+%                  if( E_buff(n)>=(E_CCA) )%&&isRAP(n)==1
                        %进行信道状态检查CCA
                        ELE_ex(n) = ELE_ex(n) + E_CCA;  %消耗的能量累积记下
                        E_buff(n) = E_buff(n) - E_CCA;   %消耗掉能量
@@ -220,7 +220,7 @@ while ( t<=rap_length )
                             end
                        end   
                        isCCA(n) = 1;
-                   end
+%                   end
 
                 end %yf end def
             end
